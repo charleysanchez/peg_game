@@ -22,31 +22,41 @@ peg_radius = 20
 selected = None
 selected2 = None
 first = True
+last_jumped_peg = None
 
 
 
 pegs = dict()
 for i in range(5):
     for j in range(i + 1):
-        # peg[i, j] = x, y, active (1 = yes, 0 = no), row, column
+        # peg[i, j] = x, y, has peg? (1 = yes, 0 = no), row, column
         pegs[i, j] = [t3[0] - (triangle_width / 10 * i - peg_radius) + (triangle_width / 5 * j - peg_radius), t3[1] + (triangle_height / 5 * (i) + peg_radius*2.4), 1, i , j]
 
 
 def valid_jump(p1, p2):
     if pegs[p2][2] == 1:
+        print("no peg to jump")
         return False
     x_away = (pegs[p2][3] - pegs[p1][3])
     y_away = (pegs[p2][4] - pegs[p1][4])
+    print(x_away)
+    print(y_away)
+    jumped_peg = p1[0] + x_away / 2, p1[1] + y_away / 2
     if (np.abs(x_away) != 2 and np.abs(y_away) != 2):
+        print("not 2 away")
         return False
     # handle horizontal movement
     if np.abs(x_away) == 2 and y_away == 0:
-        if pegs[p1[3] + x_away / 2, pegs[p1[4]]][2] == 1:
-            return True
+        if pegs[jumped_peg][2] == 1:
+            return jumped_peg
     # handle "vertical" movement
     elif np.abs(x_away) == 0 and np.abs(y_away) == 2:
-        if pegs[p1[3], p1[4] + y_away / 2] == 1:
-            return True
+        if pegs[jumped_peg] == 1:
+            return jumped_peg
+    elif np.abs(x_away) == 2 and np.abs(y_away) == 2:
+        print(jumped_peg)
+        if pegs[jumped_peg] == 1:
+            return jumped_peg
 
 
 print(pegs)
@@ -73,14 +83,34 @@ while running:
             pygame.draw.circle(screen, "white", pegs[p][:2], peg_radius)
         else:
             pygame.draw.circle(screen, hole_color, pegs[p][:2], peg_radius/4)
-    print(selected, selected2)
+    # print(selected, selected2, last_jumped_peg)
     if selected:
         if not first and pegs[selected][2] == 1:
             if selected2 is None:
                 pygame.draw.circle(screen, "red", pegs[selected][:2], peg_radius - peg_radius/4)
             else:
-                is_valid = valid_jump(selected, selected2)
-                print(is_valid)
+                jumped_peg = valid_jump(selected, selected2)
+                last_jumped_peg = jumped_peg
+                if jumped_peg:
+                    pygame.draw.circle(screen, board_color, pegs[selected][:2], peg_radius)
+                    pygame.draw.circle(screen, board_color, pegs[jumped_peg][:2], peg_radius)
+                    pygame.draw.circle(screen, "white", pegs[selected2][:2], peg_radius)
+
+                    pegs[selected][2] = 0
+                    selected = None
+
+                    pegs[jumped_peg][2] = 0
+                    jumped_peg = None
+
+                    pegs[selected2][2] = 1
+                    selected2 = None
+                    
+                else:
+                    selected = None
+                    selected2 = None
+
+
+                
         else:
             print(first)
             pygame.draw.circle(screen, board_color, pegs[selected][:2], peg_radius)
