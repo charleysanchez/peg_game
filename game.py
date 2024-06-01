@@ -10,6 +10,7 @@ height = screen.get_height()
 
 board_color = (151, 92, 37)
 hole_color = tuple(component + 30 for component in board_color)
+background_color = (80, 200, 120)
 
 t1 = (width / 5, height * 4/5)
 t2 = (width * 4/5, height * 4/5)
@@ -76,7 +77,7 @@ while running:
                         selected2 = p
                     
 
-    screen.fill("purple")
+    screen.fill(background_color)
     pygame.draw.polygon(screen, board_color, (t1, t2, t3))
     for p in pegs.keys():
         if pegs[p][2] == 1:
