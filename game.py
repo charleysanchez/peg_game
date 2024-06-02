@@ -32,13 +32,9 @@ def main():
     last_jumped_peg = None
 
 
-
-    # pegs = dict()
     pegs = []
     for i in range(5):
         for j in range(i + 1):
-            # peg[i, j] = x, y, has peg? (1 = yes, 0 = no), row, column
-            # pegs[i, j] = [t3[0] - (triangle_width / 10 * i - peg_radius) + (triangle_width / 5 * j - peg_radius), t3[1] + (triangle_height / 5 * (i) + peg_radius*2.4), 1, i , j]
             # switching to OOP
             x = t3[0] - (triangle_width / 10 * i - peg_radius) + (triangle_width / 5 * j - peg_radius)
             y = t3[1] + (triangle_height / 5 * (i) + peg_radius*2.4)
