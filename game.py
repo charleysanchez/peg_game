@@ -1,9 +1,13 @@
 import pygame
 import numpy as np
+import game_funcs as gf
 from peg import Peg
+import random
+import time
 
 
-def main():
+def main(ai=False):
+
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
@@ -16,7 +20,6 @@ def main():
     background_color = (80, 200, 120)
 
     font = pygame.font.Font('freesansbold.ttf', 32)
-
 
     t1 = (width / 5, height * 4/5)
     t2 = (width * 4/5, height * 4/5)
@@ -31,88 +34,7 @@ def main():
     first = True
     last_jumped_peg = None
 
-
-    pegs = []
-    for i in range(5):
-        for j in range(i + 1):
-            # switching to OOP
-            x = t3[0] - (triangle_width / 10 * i - peg_radius) + (triangle_width / 5 * j - peg_radius)
-            y = t3[1] + (triangle_height / 5 * (i) + peg_radius*2.4)
-            in_play = 1
-            row = i
-            column = j
-            peg = Peg(x, y, in_play, row, column)
-            pegs.append(peg)
-
-
-    def valid_jump(p1, p2):
-        if p2.in_play == 1:
-            print("no hole to jump to")
-            return False
-        x_away = p2.row - p1.row
-        y_away = p2.column - p1.column
-        print(f"From: {p1.row}, {p1.column}")
-        print(f"To: {p2.row}, {p2.column}")
-        print(x_away)
-        print(y_away)
-        jumped_peg = (p1.row + x_away / 2, p1.column + y_away / 2)
-        exists = False
-        for peg in pegs:
-            if (peg.row, peg.column) == jumped_peg:
-                jumped_peg = peg
-                exists = True
-        
-        if not exists:
-            return False
-        
-        if (np.abs(x_away) != 2 and np.abs(y_away) != 2):
-            print("not 2 away")
-            return False
-
-
-        if jumped_peg.in_play == 1:
-            print(f"From: {p1.row}, {p1.column}")
-            print(f"To: {p2.row}, {p2.column}")
-            if np.abs(jumped_peg.row - p1.row) + np.abs(jumped_peg.column - p1.column) > 2:
-                return False
-            return jumped_peg
-        else:
-            return False
-
-    def possible_move(pegs):
-        possible_move = False
-        moves = []
-        for peg in pegs:
-            for peg2 in pegs:
-                if peg == peg2:
-                    continue
-                if peg.in_play == 0:
-                    continue
-                y = valid_jump(peg, peg2)
-                if valid_jump(peg, peg2):
-                    possible_move = True
-                    moves.append(y)
-        for move in moves:
-            print(move.row, move.column)
-        print(f"Possible move? {possible_move}")
-        return possible_move
-
-    def pegs_in_play():
-        count = 0
-        for peg in pegs:
-            if peg.in_play == 1:
-                print(f"pegs in play: {peg.row} {peg.column}")
-                count += 1
-        text = font.render(f'Game Over: {count} Pegs Left', True, "red", 'black')
-        restart = font.render("press 'r' to restart", True, 'blue', 'black')
-        restartRect = restart.get_rect()
-        restartRect.topleft = (0, 0)
-        textRect = text.get_rect()
-        textRect.center = (width // 2, height // 2)
-        screen.blit(text, textRect)
-        screen.blit(restart, restartRect)
-        return count
-
+    pegs = gf.initialize_board(t1, t2, t3, triangle_width, triangle_height, peg_radius)
 
     while running:
         for event in pygame.event.get():
@@ -149,7 +71,7 @@ def main():
                 if selected2 is None:
                     pygame.draw.circle(screen, "red", (selected.x, selected.y), peg_radius - peg_radius/4)
                 else:
-                    jumped_peg = valid_jump(selected, selected2)
+                    jumped_peg = gf.valid_jump(selected, selected2, pegs)
                     last_jumped_peg = jumped_peg
                     if jumped_peg:
                         pygame.draw.circle(screen, board_color, (selected.x, selected.y), peg_radius)
@@ -177,13 +99,34 @@ def main():
                 first = False
                 selected = None
 
-        if not first and not possible_move(pegs):
+        if not first and not gf.possible_move(pegs):
             print("endgame")
-            pegs_in_play()
+            count = gf.pegs_in_play(pegs)
+            text = font.render(f'Game Over: {count} Pegs Left', True, "red", 'black')
+            restart = font.render("press 'r' to restart", True, 'blue', 'black')
+            restartRect = restart.get_rect()
+            restartRect.topleft = (0, 0)
+            textRect = text.get_rect()
+            textRect.center = (width // 2, height // 2)
+            screen.blit(text, textRect)
+            screen.blit(restart, restartRect)
+        
+        if ai:
+            time.sleep(1)
+            if len(pegs) > 1:
+                selected = pegs[random.randint(0, len(pegs))]
+                while selected.in_play != 1:
+                    selected = pegs[random.randint(0, len(pegs))]
+
+                moves = gf.all_possible_moves(pegs)
+                print(moves)
+                if moves:
+                    selected2 = moves[random.randint(0, len(moves))]
+                    print((selected.row, selected.column), (selected2.row, selected2.column))
 
         pygame.display.flip()
-
+        
         clock.tick(60)
 
     pygame.quit()
-main()
+main(ai=True)
