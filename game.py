@@ -52,7 +52,7 @@ def main(ai=False):
                             selected2 = p
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    main()
+                    main(ai)
                 if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
                     running = False
                         
@@ -110,18 +110,20 @@ def main(ai=False):
             textRect.center = (width // 2, height // 2)
             screen.blit(text, textRect)
             screen.blit(restart, restartRect)
+            if count != 1:
+                main(ai)
         
         if ai:
-            time.sleep(1)
+            # time.sleep(1)
             if len(pegs) > 1:
-                selected = pegs[random.randint(0, len(pegs))]
+                selected = pegs[random.randint(0, len(pegs) - 1)]
                 while selected.in_play != 1:
-                    selected = pegs[random.randint(0, len(pegs))]
+                    selected = pegs[random.randint(0, len(pegs) - 1)]
 
                 moves = gf.all_possible_moves(pegs)
                 print(moves)
                 if moves:
-                    selected2 = moves[random.randint(0, len(moves))]
+                    selected2 = moves[random.randint(0, len(moves) - 1)]
                     print((selected.row, selected.column), (selected2.row, selected2.column))
 
         pygame.display.flip()
